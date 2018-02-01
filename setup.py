@@ -18,7 +18,7 @@ def run():
         long_description=long_descrip,
         url="",
         license="MIT",
-        author="Evan Christianson, Andrew Leaf, Jeremy White, Mike Fienen",
+        author="Evan Christianson, Andrew Leaf, Jeremy White, Mike Fienen, Leland Scantlebury",
         maintainer_email="",
         packages=["pestools"])
 

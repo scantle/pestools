@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 __author__ = 'aleaf'
 
 import numpy as np
