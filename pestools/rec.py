@@ -1,5 +1,6 @@
-from FileReader import FileReader
+from .FileReader import FileReader
 import os
+import numpy as np
 import pandas as pd
 
 class Rec(object):
@@ -28,7 +29,7 @@ class Rec(object):
         summary: DataFrame
     Notes
     ----------
-    Only tested on Regulisation and Parameter estimation modes
+    Only tested on Regularisation and Parameter estimation modes
     """
 
     def __init__(self, rec_file):
@@ -39,11 +40,13 @@ class Rec(object):
         self._iter = 0
 
         with FileReader(rec_file) as rec:
+            # Get PEST Version
+            rec.find_phrase('version', rewind=True)
+            self.pest_version = float(rec.get_cleanline(2))
             # Get run mode
             rec.find_phrase('PEST run mode')
             rec.nextline()
             self.run_mode = rec.get_cleanline()
-            print('here')
 
             # Get case dimensions
             rec.find_phrase('Case dimensions')
@@ -148,12 +151,21 @@ class Rec(object):
         # Another option is testing for PEST's lambda search calculations using settings specified
         # in the "Control Settings" section
         while True:
-            rec.find_phrase('lambda', case_sens=False, rewind=True)
+            #rec.find_phrase('lambda', case_sens=False, rewind=True)
+            last_pos = rec.fileobject.tell()
             line = rec.get_cleanline()
-            if 'No more lambdas' in line: break
-            if '=' in line:
+            if 'No more lambdas' in line: break  # End in "original" PEST
+            if 'Current' in line:                # End in PEST_HP
+                rec.fileobject.seek(last_pos)
+                break
+            if 'lambda =' in line:
                 current_lambdas.append(float(line.split()[2]))
-                corresponding_phi.append(float(rec.get_cleanline(2)))
+                # Get Phi
+                phi = rec.get_cleanline(2)
+                if phi == 'cannot':  # Model run failure
+                    corresponding_phi.append(np.nan)
+                else:
+                    corresponding_phi.append(float(phi))
         # May be worth it someday to keep some kind of record of all lambdas, but we're just going
         # for the one with the lowest phi
         lowest_lambda = current_lambdas[corresponding_phi.index(min(corresponding_phi))]

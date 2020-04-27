@@ -8,6 +8,8 @@ class FileReader(object):
     file in binary mode ('rb') to ensure correct values of file.tell() in Windows. Source:
     https://docs.python.org/release/2.6.7/library/stdtypes.html?highlight=readline#file.tell
 
+    Author: Leland Scantlebury
+
     Parameters
     ----------
         filename: str
@@ -39,7 +41,7 @@ class FileReader(object):
         self.filename = filename
 
     def __enter__(self):
-        self.fileobject = open(self.filename, 'rb')
+        self.fileobject = open(self.filename, 'r')
         self.st_size = os.fstat(self.fileobject.fileno()).st_size
         return self
 
@@ -52,7 +54,7 @@ class FileReader(object):
         Works, assuming the file isn't being added to while being read!
         True if end of file (EOF) has been reached, false if otherwise.
 
-        Note: might want to change this because it could be adventageous to run this WHILE pest is
+        Note: might want to change since sometimes people run this WHILE pest is
         writing a file. Or at least offer multiple ways to calculate. The second method is
         to use fileobject.read(X) where X is a number of bytes, then check to see if that many bytes
         were returned.
