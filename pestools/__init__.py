@@ -62,6 +62,7 @@ from .Cor import Cor
 from .res import Res
 from .rei import Rei
 from .rec import Rec
+from .sen import Sen
 from .identpar import IdentPar
 from .plots import *
 from .maps import *

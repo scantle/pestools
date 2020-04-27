@@ -5,6 +5,8 @@ import pandas as pd
 class Rec(object):
     """ Rec Class
 
+    Author: Leland Scantlebury
+
     Parameters
     ----------
         rec_file: str
@@ -23,7 +25,7 @@ class Rec(object):
         nobsgroups: int
         phi: list
         obs_contribution: DataFrame
-        param
+        param: DataFrame
         _iter: int
         iter_variance: list
         summary: DataFrame
