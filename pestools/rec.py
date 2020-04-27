@@ -1,5 +1,4 @@
 from .FileReader import FileReader
-import os
 import numpy as np
 import pandas as pd
 
@@ -13,6 +12,7 @@ class Rec(object):
     Attributes
     ----------
         run_mode: str
+        pest_version: float
         nParam: int
         nAdjParam
         nGroups
