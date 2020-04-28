@@ -16,6 +16,7 @@ class Sen(object):
         nParam: int, number of parameters
         nParamGroups: int, number of unique groups
         param_groups: list, unique parameter groups
+        obs_groups: list, unique obs groups
         _iter: int, current iteration during read
         nIterations: int, number of iterations
         iter_sens: DataFrame, parameter sensitives for each iteration
@@ -31,6 +32,7 @@ class Sen(object):
         self.nParam = 0
         self.nGroups = 0
         self._iter = 0
+        self.obs_group_sens = {}
 
         with FileReader(sen_file) as sen:
             # Sensitivities from each iteration
@@ -40,11 +42,14 @@ class Sen(object):
             print('SEN: Read parameters and sensitivities for {} iterations'.format(self._iter))
             self.nIterations = self._iter
             self.nParam = self.iter_sens.shape[0]
-            self.param_groups = self.iter_sens['Param_Group'].unique()
+            self.param_groups = self.iter_sens['Param_Group'].unique().tolist()
             self.nParamGroups = len(self.param_groups)
 
             # Sensitivities for each observation group
             self._read_obs_groups(sen)
+
+            # Make Obs group list
+            self.obs_groups = list(self.obs_group_sens.keys())
 
     def _read_iterations(self, sen):
         while True:
@@ -75,13 +80,49 @@ class Sen(object):
 
     def _read_obs_groups(self, sen):
         while True:
-
             # Get group name (On last round, will return 'All')
             name = self._strip_obs_group_name(sen)
 
             # Check if has non-zero weight obs/prior info
-            if(self._has_obs(sens)):
+            if(self._has_obs(sen)):
                 # Read in sensitivies
-
+                sen.get_cleanline()  # Skip header
+                names = ['Parameter', 'Param_Group', 'Value', 'Sensitivity']
+                self.obs_group_sens[name] = sen.get_DataFrame(manual_rewind=True, nrows=self.nParam,
+                                                              delim_whitespace=True, names = names, index_col=0)
+            else:
+                self.obs_group_sens[name] = None
             # Check if done
             if name == 'All': break
+
+    def _strip_obs_group_name(self, sen):
+        sen.find_phrase("Composite", rewind=True)
+        group = sen.get_cleanline(5)
+        if group == 'info':
+            # Out of groups - we're on the final "All" sensitivity field
+            group = 'All'
+        group = group.strip('"')
+        return group
+
+    def _has_obs(self, sen):
+        # Regardless, lines have word "observations"
+        sen.find_phrase('observations', rewind=True)
+        if(sen.get_cleanline().startswith('No')):
+            obs = False
+        else:
+            obs = True
+        return obs
+
+    def get_sens_by_param(self, param):
+        sens = []
+        groups = []
+        for key in self.obs_group_sens.keys():
+            obsdf = self.obs_group_sens[key]
+            if (obsdf is not None):
+                groups.append(key)
+                sens.append(obsdf.loc[param,'Sensitivity'])
+        # Create dataframe from results
+        df = pd.DataFrame({'Obs_Group'   : groups,
+                           'Sensitivity' : sens})
+        df.set_index('Obs_Group', inplace=True)
+        return(df)
