@@ -30,7 +30,6 @@ class Sen(object):
     def __init__(self, sen_file):
 
         self.nParam = 0
-        self.nGroups = 0
         self._iter = 0
         self.obs_group_sens = {}
 
@@ -41,7 +40,8 @@ class Sen(object):
             # Process new data
             print('SEN: Read parameters and sensitivities for {} iterations'.format(self._iter))
             self.nIterations = self._iter
-            self.nParam = self.iter_sens.shape[0]
+            self.params = self.iter_sens.index.tolist()
+            self.nParam = len(self.params)
             self.param_groups = self.iter_sens['Param_Group'].unique().tolist()
             self.nParamGroups = len(self.param_groups)
 
@@ -50,6 +50,7 @@ class Sen(object):
 
             # Make Obs group list
             self.obs_groups = list(self.obs_group_sens.keys())
+            self.nObsGroups = len(self.obs_groups)
 
     def _read_iterations(self, sen):
         while True:

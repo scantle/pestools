@@ -89,6 +89,7 @@ class Rec(object):
                     pass
             # Cleanup
             self._iter -= 1
+            self.paramlist = self.param.index.unique().tolist()
             print('End of Rec file reached.')
             print('\tIterations {}'.format(self._iter))
             # Calculate variance for each iteration
@@ -126,7 +127,7 @@ class Rec(object):
                                             delim_whitespace=True, names = names, index_col=0)
         # Storage
         # We could check the iteration counter (_iter) or if the variables are set. Either way.
-        self.phi.append(current_phi)
+        self.phi.append(float(current_phi))
         if self.obs_contribution is None:
             self.obs_contribution = pd.DataFrame(data=contributions, columns=['Initial'])
         else:
